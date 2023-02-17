@@ -30,6 +30,7 @@ impl VirtualMachine {
                         Ok(value) => value,
                         Err(error) => {
                             println!("{}", error);
+                            println!("Invalid instruction <{}> at line {}", split[i], i+1);
                             return;
                         }
                     });
@@ -39,6 +40,7 @@ impl VirtualMachine {
                         Ok(value) => value,
                         Err(error) => {
                             println!("{}", error);
+                            println!("Invalid instruction <{}> at line {}", split[i], i+1);
                             return;
                         }
                     };
@@ -50,6 +52,7 @@ impl VirtualMachine {
                         Ok(value) => value,
                         Err(error) => {
                             println!("{}", error);
+                            println!("Invalid instruction <{}> at line {}", split[i], i+1);
                             return;
                         }
                     };
@@ -63,16 +66,25 @@ impl VirtualMachine {
                         Ok(value) => value,
                         Err(error) => {
                             println!("{}", error);
+                            println!("Invalid instruction <{}> at line {}", split[i], i+1);
                             return;
                         }
                     };
 
                     if temp != 0 {
-                        i = (i as i32 + y.parse::<i32>().unwrap() - 1) as usize;
+                        let y = match self.parse_register_handler(y) {
+                            Ok(value) => value,
+                            Err(error) => {
+                                println!("{}", error);
+                                println!("Invalid instruction <{}> at line {}", split[i], i+1);
+                                return;
+                            }
+                        };
+                        i = (i as i32 + y - 1) as usize;
                     }
                 }
                 _ => {
-                    println!("Invalid instruction: {}", split[i]);
+                    println!("Invalid instruction <{}> at line {}", split[i], i+1);
                     return;
                 }
             }
