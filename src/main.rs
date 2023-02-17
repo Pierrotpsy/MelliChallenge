@@ -3,8 +3,8 @@ use std::fs;
 
 fn main() {
     let test = fs::read_to_string("input-2.asm").unwrap();
-    let mut VM = VirtualMachine::new();
-    VM.interpreter(test);
+    let mut vm = VirtualMachine::new();
+    vm.interpreter(test);
 }
 
 pub struct VirtualMachine {
@@ -25,66 +25,58 @@ impl VirtualMachine {
         while i < split.len() - 1 {
             let instruction = split[i].split_whitespace().collect::<Vec<&str>>();
             match instruction[..] {
-                ["mov", x, y] => self.mov(x, y),
-                ["add", x, y] => self.add(x,y),
-                ["print", x] => self.print(x),
-                ["jnz", x, y] => self.jnz(x, y, &mut i),
+                ["mov", x, y] => {
+                    self.registers.insert(x.to_string(), match self.parse_register_handler(y) {
+                        Ok(value) => value,
+                        Err(error) => {
+                            println!("{}", error);
+                            return;
+                        }
+                    });
+                },
+                ["add", x, y] => {
+                    let temp = match self.parse_register_handler(y) {
+                        Ok(value) => value,
+                        Err(error) => {
+                            println!("{}", error);
+                            return;
+                        }
+                    };
+                    let Some(value) = self.registers.get_mut(x) else {println!("Uninitialized register"); return;};
+                    *value += temp;
+                },
+                ["print", x] => {
+                    let temp = match self.get_register_handler(x) {
+                        Ok(value) => value,
+                        Err(error) => {
+                            println!("{}", error);
+                            return;
+                        }
+                    };
+                    match char::from_u32(temp as u32) {
+                        Some(value) => print!("{}", value),
+                        None => println!("Invalid Unicode Character")
+                    }
+                },
+                ["jnz", x, y] => {
+                    let temp = match self.parse_register_handler(x) {
+                        Ok(value) => value,
+                        Err(error) => {
+                            println!("{}", error);
+                            return;
+                        }
+                    };
+
+                    if temp != 0 {
+                        i = (i as i32 + y.parse::<i32>().unwrap() - 1) as usize;
+                    }
+                }
                 _ => {
                     println!("Invalid instruction: {}", split[i]);
                     return;
                 }
             }
             i += 1;
-        }
-    }
-
-    fn mov(&mut self, x: &str, y: &str) {
-        self.registers.insert(x.to_string(), match self.parse_register_handler(y) {
-            Ok(value) => value,
-            Err(error) => {
-                println!("{}", error);
-                return;
-            }
-        });
-    }
-
-    fn add(&mut self, x: &str, y: &str) {
-        let temp = match self.parse_register_handler(y) {
-            Ok(value) => value,
-            Err(error) => {
-                println!("{}", error);
-                return;
-            }
-        };
-        let Some(value) = self.registers.get_mut(x) else {println!("Uninitialized register"); return;};
-        *value += temp;
-    }
-
-    fn jnz(&self, x: &str, y: &str, i: &mut usize) {
-        let temp = match self.parse_register_handler(x) {
-            Ok(value) => value,
-            Err(error) => {
-                println!("{}", error);
-                return;
-            }
-        };
-
-        if temp != 0 {
-            *i = (*i as i32 + y.parse::<i32>().unwrap() - 1) as usize;
-        }
-    }
-
-    fn print(&self, x: &str) {
-        let temp = match self.get_register_handler(x) {
-            Ok(value) => value,
-            Err(error) => {
-                println!("{}", error);
-                return;
-            }
-        };
-        match char::from_u32(temp as u32) {
-            Some(value) => print!("{}", value),
-            None => println!("Invalid Unicode Character")
         }
     }
 
