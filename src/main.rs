@@ -2,9 +2,9 @@ use std::collections::HashMap;
 use std::fs;
 
 fn main() {
-    let test = fs::read_to_string("input-2.asm").unwrap();
+    let input = fs::read_to_string("input-2.asm").unwrap();
     let mut vm = VirtualMachine::new();
-    vm.interpreter(test);
+    vm.interpreter(input);
 }
 
 pub struct VirtualMachine {
