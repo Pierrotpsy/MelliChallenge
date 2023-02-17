@@ -29,8 +29,7 @@ impl VirtualMachine {
                     self.registers.insert(x.to_string(), match self.parse_register_handler(y) {
                         Ok(value) => value,
                         Err(error) => {
-                            println!("{}", error);
-                            println!("Invalid instruction <{}> at line {}", split[i], i+1);
+                            self.error_printer(&split[i], &i, &error);
                             return;
                         }
                     });
@@ -39,8 +38,7 @@ impl VirtualMachine {
                     let temp = match self.parse_register_handler(y) {
                         Ok(value) => value,
                         Err(error) => {
-                            println!("{}", error);
-                            println!("Invalid instruction <{}> at line {}", split[i], i+1);
+                            self.error_printer(&split[i], &i, &error);
                             return;
                         }
                     };
@@ -51,8 +49,7 @@ impl VirtualMachine {
                     let temp = match self.get_register_handler(x) {
                         Ok(value) => value,
                         Err(error) => {
-                            println!("{}", error);
-                            println!("Invalid instruction <{}> at line {}", split[i], i+1);
+                            self.error_printer(&split[i], &i, &error);
                             return;
                         }
                     };
@@ -65,8 +62,7 @@ impl VirtualMachine {
                     let temp = match self.parse_register_handler(x) {
                         Ok(value) => value,
                         Err(error) => {
-                            println!("{}", error);
-                            println!("Invalid instruction <{}> at line {}", split[i], i+1);
+                            self.error_printer(&split[i], &i, &error);
                             return;
                         }
                     };
@@ -75,8 +71,7 @@ impl VirtualMachine {
                         let y = match self.parse_register_handler(y) {
                             Ok(value) => value,
                             Err(error) => {
-                                println!("{}", error);
-                                println!("Invalid instruction <{}> at line {}", split[i], i+1);
+                                self.error_printer(&split[i], &i, &error);
                                 return;
                             }
                         };
@@ -84,7 +79,7 @@ impl VirtualMachine {
                     }
                 }
                 _ => {
-                    println!("Invalid instruction <{}> at line {}", split[i], i+1);
+                    self.error_printer(&split[i], &i, &"".to_string());
                     return;
                 }
             }
@@ -102,7 +97,12 @@ impl VirtualMachine {
     fn get_register_handler(&self, x: &str) -> Result<i32, String> {
         match self.registers.get(x) {
             Some(value) => Ok(*value),
-            None => Err("Uninitialized register".to_string())
+            None => Err(format!("Uninitialized register <{}>", x))
         }
+    }
+
+    fn error_printer(&self, instruction: &str, index: &usize, error: &String) {
+        if error != "" {println!("{}", error)}
+        println!("Invalid instruction <{}> at line {}", instruction, index+1);
     }
 }
